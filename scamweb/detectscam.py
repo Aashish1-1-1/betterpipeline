@@ -1,7 +1,7 @@
 import numpy as np
 
 
-def detect(x: str, sess):
+def detect_isscam(x: str, sess):
     a = len(x)
     b = 1 if "subscribe" in x else 0
     c = 1 if "#" in x else 0
@@ -21,4 +21,4 @@ def detect(x: str, sess):
     # Predict
     pred_ort = sess.run(None, input_dict)
     print(pred_ort)
-    return pred_ort
+    return (pred_ort[1].1 >= pred_ort[1].0)
