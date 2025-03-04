@@ -13,21 +13,22 @@ class Crawler:
         self.depth = depth
         self.queue = Priorityqueue()
         self.sess = InferenceSession(
-            "util/spamweb.onnx", providers=["cpuexecutionprovider"]
+            "util/spamweb.onnx", providers=["CPUExecutionProvider"]
         )
         self.visited = set()
 
     def extracthtml(self, url):
-        if url in self.visited or self.depth == 0:
+        if url is None or url in self.visited or self.depth == 0:
             return
         try:
             html = requests.get(url)
             html.encoding = html.apparent_encoding
-            soup = BeautifulSoup(html.content, "html_parser")
-            links = soup.find_all("a", rel=lambda x: x in ["nofollow", "noreferrer"])
+            soup = BeautifulSoup(html.content, "html.parser")
+            links = soup.find_all("a")
             for link in links:
                 href = link.get("href")
-                if href.startswith("http") or href.startswith("https"):
+                if href and (href.startswith("http") or href.startswith("https")):
+                    print(href)
                     valid = detect_isscam(href, self.sess)
                     if valid is False:
                         print("Valid")
@@ -36,6 +37,8 @@ class Crawler:
                     else:
                         print("Not valid")
                         continue
+                else:
+                    continue
             self.visited.add(url)
             self.depth = self.depth - 1
         except requests.exceptions.RequestException as e:
@@ -46,4 +49,5 @@ class Crawler:
 
         while not self.queue.is_empty():
             next_url = self.queue.dequeue()
-            self.extracthtml(next_url)
+            self.extracthtml(next_url[0])
+        print("Crawling complete")

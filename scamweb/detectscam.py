@@ -1,7 +1,89 @@
+from urllib.parse import urlparse
+
 import numpy as np
 
 
 def detect_isscam(x: str, sess):
+    whitelist = {
+        "facebook.com",
+        "twitter.com",
+        "google.com",
+        "youtube.com",
+        "bbc.com",
+        "linkedin.com",
+        "instagram.com",
+        "reddit.com",
+        "wikipedia.org",
+        "amazon.com",
+        "github.com",
+        "apple.com",
+        "microsoft.com",
+        "yahoo.com",
+        "whatsapp.com",
+        "pinterest.com",
+        "vimeo.com",
+        "dropbox.com",
+        "nytimes.com",
+        "theguardian.com",
+        "wordpress.com",
+        "bbc.co.uk",
+        "cnn.com",
+        "aljazeera.com",
+        "forbes.com",
+        "bbc.co.uk",
+        "zoom.us",
+        "twitch.tv",
+        "skype.com",
+        "snapchat.com",
+        "telegram.org",
+        "messenger.com",
+        "slack.com",
+        "airbnb.com",
+        "uber.com",
+        "spotify.com",
+        "soundcloud.com",
+        "quora.com",
+        "github.io",
+        "trello.com",
+        "notion.so",
+        "merriam-webster.com",
+        "thedailybeast.com",
+        "cnbc.com",
+        "huffpost.com",
+        "businessinsider.com",
+        "thesaurus.com",
+        "time.com",
+        "fortune.com",
+        "wired.com",
+        "lifehacker.com",
+        "techcrunch.com",
+        "digitaltrends.com",
+        "engadget.com",
+        "xfinity.com",
+        "samsung.com",
+        "hulu.com",
+        "adobe.com",
+        "wellsfargo.com",
+        "paypal.com",
+        "squareup.com",
+        "expedia.com",
+        "booking.com",
+        "bestbuy.com",
+        "target.com",
+        "lowes.com",
+        "homeDepot.com",
+        "newegg.com",
+        "ebay.com",
+        "shopify.com",
+        "etsy.com",
+    }
+    parsed_url = urlparse(x)
+
+    domain = parsed_url.netloc.lower()
+
+    for trusted_domain in whitelist:
+        if trusted_domain in domain:
+            return False
     a = len(x)
     b = 1 if "subscribe" in x else 0
     c = 1 if "#" in x else 0
@@ -21,4 +103,4 @@ def detect_isscam(x: str, sess):
     # Predict
     pred_ort = sess.run(None, input_dict)
     print(pred_ort)
-    return (pred_ort[1].1 >= pred_ort[1].0)
+    return pred_ort[1][0][1] >= 0.82
