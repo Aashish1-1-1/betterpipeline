@@ -4,6 +4,7 @@ import numpy as np
 
 
 def detect_isscam(x: str, sess):
+    ## whitelist for known domains
     whitelist = {
         "facebook.com",
         "twitter.com",
@@ -90,7 +91,7 @@ def detect_isscam(x: str, sess):
     d = sum(1 for i in x if i.isnumeric())
     e = 0 if "https" in x else 1
     f = len(x.split("/"))
-
+    ##features preparation
     input_dict = {
         "len_url": np.array([[a]], dtype=np.float32),
         "contains_subscribe": np.array([[b]], dtype=np.float32),
@@ -102,5 +103,5 @@ def detect_isscam(x: str, sess):
 
     # Predict
     pred_ort = sess.run(None, input_dict)
-    print(pred_ort)
+    # return true if prob is greater than 85%
     return pred_ort[1][0][1] >= 0.82

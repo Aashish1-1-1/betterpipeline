@@ -2,6 +2,13 @@
 
 Betterpipeline is a pipeline for webcrawler for identification of the site that are important to crawl, identification also means to eliminate scammy websites
 
+# Features
+
+- Scamwebsite check using [dataset](https://www.kaggle.com/datasets/shivamb/spam-url-prediction) linear regression
+- Weighted crawl using word embedding(vector database)
+- Priority queue based on weight for efficient use of resource that important site get crawled first
+- Everything containerized
+
 # To run
 
 ```bash

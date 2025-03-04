@@ -1,3 +1,5 @@
+from urllib.parse import urljoin
+
 import requests
 from bs4 import BeautifulSoup
 from onnxruntime import InferenceSession
@@ -7,6 +9,7 @@ from scamweb.detectscam import detect_isscam
 from weight.weight import findweight
 
 
+##crawler class
 class Crawler:
     def __init__(self, seedurl, depth):
         self.seedurl = seedurl
@@ -17,6 +20,8 @@ class Crawler:
         )
         self.visited = set()
 
+    ##html extraction getting links <a>
+
     def extracthtml(self, url):
         if url is None or url in self.visited or self.depth == 0:
             return
@@ -25,27 +30,33 @@ class Crawler:
             html.encoding = html.apparent_encoding
             soup = BeautifulSoup(html.content, "html.parser")
             links = soup.find_all("a")
+
+            self.visited.add(url)
+
             for link in links:
                 href = link.get("href")
-                if href and (href.startswith("http") or href.startswith("https")):
-                    print(href)
-                    valid = detect_isscam(href, self.sess)
-                    if valid is False:
-                        print("Valid")
-                        weight = findweight(url)
-                        self.queue.enqueue(href, weight)
-                    else:
-                        print("Not valid")
+                if href:
+                    full_url = urljoin(url, href)
+
+                    if full_url in self.visited:
                         continue
-                else:
-                    continue
-            self.visited.add(url)
-            self.depth = self.depth - 1
+
+                    if full_url.startswith("http"):
+                        valid = detect_isscam(full_url, self.sess)
+                        if not valid:
+                            print("Valid")
+                            weight = findweight(full_url)
+                            self.queue.enqueue(full_url, weight)
+                            self.visited.add(full_url)
+                        else:
+                            print("Not valid")
+            self.depth -= 1
         except requests.exceptions.RequestException as e:
             print(f"Failed to fetch {url}: {e}")
 
+    ##start crawling
     def start_crawl(self):
-        self.queue.enqueue(self.seedurl, 0)
+        self.queue.enqueue(self.seedurl, findweight(self.seedurl))
 
         while not self.queue.is_empty():
             next_url = self.queue.dequeue()

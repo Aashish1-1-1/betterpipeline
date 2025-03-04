@@ -1,170 +1,39 @@
+##scoring mechanism for different keywords
+from urllib.parse import urlparse
+
+import spacy
+
+nlp = spacy.load("en_core_web_md")
+priority_keyword_weights = {
+    "high_priority": (
+        5,
+        nlp(
+            "bill law amendment vote resolution court supreme-court judiciary constitution parliament senate congress governor mayor treaty agreement"
+        ),
+    ),
+    "medium_priority": (
+        3,
+        nlp(
+            "health pandemic COVID-19 vaccine public-health security cybersecurity environment climate-change election voting national-security disaster-response"
+        ),
+    ),
+    "low_priority": (
+        1,
+        nlp(
+            "civil-rights justice human-rights democracy protests legislation laws regulations audit whistleblower public-comment news announcements"
+        ),
+    ),
+    "baseline_priority": (0.5, nlp(".gov gov government")),
+}
+
+
 def findweight(url):
-    priority_keyword_weights = {
-        "high_priority": (
-            5,
-            {
-                "bill",
-                "law",
-                "amendment",
-                "vote",
-                "resolution",
-                "hearing",
-                "debate",
-                "legislative-process",
-                "court",
-                "supreme-court",
-                "judiciary",
-                "constitution",
-                "legal-advice",
-                "legislation-summary",
-                "public-hearing",
-                "committee-report",
-                "department-of-...",
-                "ministries-of-...",
-                "bureau-of...",
-                "agency-of-...",
-                "federal",
-                "state",
-                "local-government",
-                "elected-officials",
-                "white-house",
-                "parliament",
-                "senate",
-                "congress",
-                "governor",
-                "mayor",
-                "chief-justice",
-                "foreign-affairs",
-                "state-department",
-                "treaty",
-                "agreement",
-                "diplomacy",
-                "foreign-affairs",
-                "UN-resolution",
-                "international-relations",
-                "multilateral",
-                "bilateral",
-                "foreign-policy",
-                "summit",
-                "conference",
-            },
-        ),
-        "medium_priority": (
-            3,
-            {
-                "health",
-                "pandemic",
-                "COVID-19",
-                "health-crisis",
-                "vaccine",
-                "epidemic",
-                "public-health",
-                "healthcare-reform",
-                "medical-response",
-                "health-policy",
-                "emergency",
-                "disaster-response",
-                "civil-defense",
-                "public-safety",
-                "first-responders",
-                "security",
-                "counterterrorism",
-                "border-security",
-                "national-security",
-                "cybersecurity",
-                "environment",
-                "climate-change",
-                "sustainability",
-                "green-new-deal",
-                "carbon-emissions",
-                "carbon-tax",
-                "environmental-protection",
-                "climate-action",
-                "renewable-energy",
-                "biodiversity",
-                "pollution",
-                "election",
-                "voting",
-                "referendum",
-                "state-of-emergency",
-                "lockdown",
-                "quarantine",
-                "climate-change",
-                "global-warming",
-                "health-crisis",
-                "economic-crisis",
-                "census",
-            },
-        ),
-        "low_priority": (
-            1,
-            {
-                "civil-rights",
-                "justice",
-                "equality",
-                "human-rights",
-                "political-movements",
-                "democracy",
-                "freedom",
-                "protests",
-                "reform",
-                "legislative-reforms",
-                "treaty",
-                "national-security",
-                "terrorism",
-                "immigration",
-                "refugees",
-                "public-comment",
-                "feedback",
-                "consultation",
-                "national-report",
-                "government-response",
-                "audit",
-                "whistleblower",
-                "ombudsman",
-                "public-involvement",
-                "service-delivery",
-                "federal-programs",
-                "subsidies",
-                "press-release",
-                "news",
-                "announcements",
-                "policies",
-                "legislation",
-                "laws",
-                "acts",
-                "regulations",
-                "official",
-                "statements",
-                "communiqué",
-                "report",
-                "bulletin",
-                "records",
-                "official-documents",
-                "executive-order",
-                "public-notice",
-                "policy-update",
-                "guidelines",
-                "govinfo",
-                "govt",
-                "ministries",
-                "ministries-of-...",
-                "department-of-...",
-                "publications",
-                "transparency",
-                "open-government",
-            },
-        ),
-        "baseline_priority": (
-            0.5,
-            {".gov", ".gov.[country-code]", "gov", "government"},
-        ),
-    }
+    parsed_url = urlparse(url)
+    url_text = f"{parsed_url.netloc} {parsed_url.path} {parsed_url.query}".lower()
     total_weight = 0
-    words = set(url.lower().split())
-
-    for _, (weight, keywords) in priority_keyword_weights.items():
-        if words & keywords:
-            total_weight += weight
-
+    urlembedding = nlp(str(url_text))
+    for key, value in priority_keyword_weights.items():
+        similarity = urlembedding.similarity(value[1])
+        total_weight += similarity * value[0]
+    print(url, total_weight)
     return total_weight
