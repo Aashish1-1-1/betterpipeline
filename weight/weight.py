@@ -35,5 +35,4 @@ def findweight(url):
     for key, value in priority_keyword_weights.items():
         similarity = urlembedding.similarity(value[1])
         total_weight += similarity * value[0]
-    print(url, total_weight)
     return total_weight

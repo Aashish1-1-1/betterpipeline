@@ -60,5 +60,6 @@ class Crawler:
 
         while not self.queue.is_empty():
             next_url = self.queue.dequeue()
+            print(next_url)
             self.extracthtml(next_url[0])
         print("Crawling complete")
